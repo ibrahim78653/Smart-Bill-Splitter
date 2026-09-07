@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { CheckCircle2, Circle, Loader2, Receipt } from 'lucide-react'
+import { CheckCircle2, Receipt } from 'lucide-react'
 import { extractBill, verifyBill, getBill } from '../lib/api'
 import { useBillStore } from '../store/billStore'
+import { cn } from '../lib/utils'
 
-type Step = { id: string; label: string; status: 'done' | 'active' | 'pending' }
+type StepStatus = 'done' | 'active' | 'pending'
+type Step = { id: string; label: string; emoji: string; status: StepStatus }
 
 const INITIAL_STEPS: Step[] = [
-  { id: 'upload', label: 'Uploaded your bill', status: 'done' },
-  { id: 'preprocess', label: 'Enhancing image quality', status: 'active' },
-  { id: 'extract', label: 'Reading items and prices', status: 'pending' },
-  { id: 'verify', label: 'Checking numbers', status: 'pending' },
-  { id: 'ready', label: 'Preparing your review', status: 'pending' },
+  { id: 'upload',     label: 'Bill uploaded',           emoji: '📤', status: 'done' },
+  { id: 'preprocess', label: 'Enhancing image quality',  emoji: '🔍', status: 'active' },
+  { id: 'extract',    label: 'Reading items and prices', emoji: '🤖', status: 'pending' },
+  { id: 'verify',     label: 'Verifying numbers',        emoji: '🔢', status: 'pending' },
+  { id: 'ready',      label: 'Preparing your review',   emoji: '✅', status: 'pending' },
+]
+
+const TIPS = [
+  'Pro tip: You can add multiple photos for multi-page bills.',
+  'AI reads tax lines separately — CGST, SGST, and all.',
+  'Every calculation is deterministic — no AI guesswork.',
+  'Fractional quantities are supported (e.g. 0.5 of a dish).',
+  'Results are exact to the last paisa.',
 ]
 
 export default function ProcessingPage() {
@@ -20,6 +30,7 @@ export default function ProcessingPage() {
   const { setBill } = useBillStore()
   const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS)
   const [error, setError] = useState<string | null>(null)
+  const [tipIndex, setTipIndex] = useState(0)
 
   const advance = (activeId: string) => {
     setSteps((prev) =>
@@ -34,26 +45,28 @@ export default function ProcessingPage() {
     setSteps((prev) => prev.map((s) => ({ ...s, status: 'done' })))
   }
 
+  // Rotate tips
+  useEffect(() => {
+    const t = setInterval(() => setTipIndex((i) => (i + 1) % TIPS.length), 3500)
+    return () => clearInterval(t)
+  }, [])
+
   useEffect(() => {
     if (!billId) return
 
     const run = async () => {
       try {
-        // Advance to extract step
         setTimeout(() => advance('extract'), 800)
         const bill = await extractBill(billId)
         setBill(bill)
 
-        // Advance to verify step
         advance('verify')
         await verifyBill(billId)
 
-        // Advance to ready step
         advance('ready')
         const updatedBill = await getBill(billId)
         setBill(updatedBill)
 
-        // Done — navigate to review
         setTimeout(() => {
           markAllDone()
           setTimeout(() => navigate(`/review/${billId}`), 600)
@@ -66,30 +79,55 @@ export default function ProcessingPage() {
     run()
   }, [billId])
 
+  // Compute overall progress %
+  const doneCount = steps.filter((s) => s.status === 'done').length
+  const progressPct = Math.round((doneCount / steps.length) * 100)
+
   return (
-    <div className="min-h-screen bg-surface-50 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden"
+      style={{ background: '#faf9f7' }}>
+      {/* Background blobs */}
+      <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #059669 0%, transparent 70%)' }} />
+      <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full opacity-15 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #0ea5e9 0%, transparent 70%)' }} />
+
       {/* Logo */}
-      <div className="flex items-center gap-2 mb-12">
-        <Receipt className="text-emerald-600" size={24} />
+      <div className="flex items-center gap-2 mb-10 animate-fade-in">
+        <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center shadow-sm">
+          <Receipt className="text-white" size={18} />
+        </div>
         <span className="font-bold text-xl text-ink-900">SplitSmart</span>
       </div>
 
-      <div className="w-full max-w-sm">
-        <div className="card p-8 animate-slide-up">
-          {/* Spinner */}
+      <div className="w-full max-w-sm animate-slide-up">
+        <div className="card p-8">
+          {/* Spinner rings */}
           <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full border-2 border-emerald-100 flex items-center justify-center">
-                <Receipt className="text-emerald-600" size={24} />
-              </div>
+            <div className="relative w-20 h-20">
+              {/* Outer ring */}
               {!error && (
-                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-emerald-500 animate-spin" />
+                <>
+                  <div className="absolute inset-0 rounded-full border-2 border-emerald-100" />
+                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-emerald-500 animate-ring-spin" />
+                  <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-emerald-300 animate-ring-spin-slow" />
+                </>
               )}
+              <div className={cn(
+                'absolute inset-0 rounded-full flex items-center justify-center',
+                error ? 'bg-danger-50' : ''
+              )}>
+                {error ? (
+                  <span className="text-2xl">⚠️</span>
+                ) : (
+                  <Receipt className="text-emerald-600" size={24} />
+                )}
+              </div>
             </div>
           </div>
 
           {error ? (
-            <div className="text-center">
+            <div className="text-center animate-bounce-in">
               <p className="font-semibold text-ink-900 mb-2">Extraction failed</p>
               <p className="text-sm text-danger-600 mb-6">{error}</p>
               <button
@@ -102,42 +140,58 @@ export default function ProcessingPage() {
             </div>
           ) : (
             <>
-              <h2 className="font-bold text-xl text-ink-900 text-center mb-2">
-                Reading your bill
-              </h2>
-              <p className="text-ink-400 text-sm text-center mb-8">
-                This takes about 10–20 seconds
-              </p>
+              <h2 className="font-bold text-xl text-ink-900 text-center mb-1">Reading your bill</h2>
+              <p className="text-ink-400 text-sm text-center mb-6">This takes about 10–20 seconds</p>
 
-              {/* Step checklist */}
-              <ul className="space-y-4" role="list">
-                {steps.map((step) => (
+              {/* Progress bar */}
+              <div className="w-full h-1.5 bg-stone-100 rounded-full mb-6 overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+
+              {/* Step list */}
+              <ul className="space-y-3.5" role="list">
+                {steps.map((step, idx) => (
                   <li
                     key={step.id}
-                    className="flex items-center gap-3"
+                    className={cn(
+                      'flex items-center gap-3 transition-all duration-300',
+                      step.status === 'pending' ? 'opacity-40' : 'opacity-100'
+                    )}
+                    style={{ transitionDelay: `${idx * 50}ms` }}
                     aria-label={`${step.label}: ${step.status}`}
                   >
-                    {step.status === 'done' ? (
-                      <CheckCircle2 className="text-emerald-600 flex-shrink-0" size={20} />
-                    ) : step.status === 'active' ? (
-                      <Loader2 className="text-amber-500 flex-shrink-0 animate-spin" size={20} />
-                    ) : (
-                      <Circle className="text-stone-300 flex-shrink-0" size={20} />
-                    )}
+                    <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center">
+                      {step.status === 'done' ? (
+                        <CheckCircle2 className="text-emerald-600 animate-check-pop" size={20} />
+                      ) : step.status === 'active' ? (
+                        <span className="text-base animate-pulse">{step.emoji}</span>
+                      ) : (
+                        <span className="text-base">{step.emoji}</span>
+                      )}
+                    </div>
                     <span
-                      className={
-                        step.status === 'done'
-                          ? 'text-emerald-700 font-medium text-sm'
-                          : step.status === 'active'
-                          ? 'text-amber-600 font-semibold text-sm animate-pulse-soft'
-                          : 'text-ink-300 text-sm'
-                      }
+                      className={cn(
+                        'text-sm font-medium transition-colors duration-200',
+                        step.status === 'done'   ? 'text-emerald-700' :
+                        step.status === 'active' ? 'text-amber-600 animate-pulse-soft' :
+                        'text-ink-300'
+                      )}
                     >
                       {step.label}
                     </span>
                   </li>
                 ))}
               </ul>
+
+              {/* Rotating tip */}
+              <div className="mt-6 pt-5 border-t border-stone-100">
+                <p key={tipIndex} className="text-xs text-ink-400 text-center animate-fade-in leading-relaxed">
+                  💡 {TIPS[tipIndex]}
+                </p>
+              </div>
             </>
           )}
         </div>

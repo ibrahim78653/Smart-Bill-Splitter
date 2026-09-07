@@ -8,6 +8,8 @@ import { useBillStore } from '../store/billStore'
 import type { LineItem } from '../store/billStore'
 import { updateBill, confirmBill } from '../lib/api'
 import { formatCurrency, confidenceBadgeClass, confidenceLabel, cn } from '../lib/utils'
+import StepProgress from '../components/StepProgress'
+import { SkeletonLineItem, SkeletonSummary } from '../components/SkeletonCard'
 
 export default function ReviewPage() {
   const { billId } = useParams<{ billId: string }>()
@@ -23,8 +25,20 @@ export default function ReviewPage() {
 
   if (!bill) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-ink-500">Loading bill...</p>
+      <div className="min-h-screen bg-surface-50 pb-24">
+        <header className="sticky top-0 z-40 bg-white border-b border-stone-100 px-4 py-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center gap-2 mb-3">
+              <Receipt className="text-emerald-600" size={20} />
+              <span className="font-bold text-lg text-ink-900">Review Bill</span>
+            </div>
+            <StepProgress />
+          </div>
+        </header>
+        <div className="max-w-3xl mx-auto px-4 pt-6 space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => <SkeletonLineItem key={i} />)}
+          <SkeletonSummary />
+        </div>
       </div>
     )
   }
@@ -32,15 +46,12 @@ export default function ReviewPage() {
   const hasWarnings = bill.warnings.length > 0 || bill.line_items.some((i) => i.warnings.length > 0)
   const showReconcileWarning = !bill.reconciles && bill.total_printed !== null
 
-  // Save line item edits
   const handleSaveEdit = async (item: LineItem) => {
     if (!billId) return
     setSaving(true)
     try {
       const updatedItems = bill.line_items.map((li) =>
-        li.id === item.id
-          ? { ...li, ...editValues, user_edited: true }
-          : li
+        li.id === item.id ? { ...li, ...editValues, user_edited: true } : li
       )
       const updated = await updateBill(billId, { line_items: updatedItems })
       setBill(updated)
@@ -67,32 +78,35 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 pb-24">
+    <div className="min-h-screen bg-surface-50 pb-24 page-enter">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-stone-100 px-4 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Receipt className="text-emerald-600" size={20} />
-            <span className="font-bold text-lg text-ink-900">Review Bill</span>
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-stone-100 px-4 py-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Receipt className="text-emerald-600" size={20} />
+              <span className="font-bold text-lg text-ink-900">Review Bill</span>
+            </div>
+            <div className={cn(
+              'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300',
+              bill.verification_status === 'confirmed'
+                ? 'bg-emerald-100 text-emerald-700'
+                : bill.verification_status === 'needs_review'
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-stone-100 text-ink-500'
+            )}>
+              {bill.verification_status === 'confirmed' ? '✓ Confirmed' :
+               bill.verification_status === 'needs_review' ? '⚠ Needs Review' : 'Pending'}
+            </div>
           </div>
-          <div className={cn(
-            'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold',
-            bill.verification_status === 'confirmed'
-              ? 'bg-emerald-100 text-emerald-700'
-              : bill.verification_status === 'needs_review'
-              ? 'bg-amber-100 text-amber-700'
-              : 'bg-stone-100 text-ink-500'
-          )}>
-            {bill.verification_status === 'confirmed' ? '✓ Confirmed' :
-             bill.verification_status === 'needs_review' ? '⚠ Needs Review' : 'Pending'}
-          </div>
+          <StepProgress />
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 pt-6 space-y-6">
+      <div className="max-w-3xl mx-auto px-4 pt-6 space-y-4">
         {/* Merchant info */}
         {bill.merchant_name && (
-          <div className="card p-5">
+          <div className="card p-5 animate-slide-up">
             <p className="text-xs text-ink-400 font-medium uppercase tracking-wide mb-1">Restaurant</p>
             <h2 className="text-xl font-bold text-ink-900">{bill.merchant_name}</h2>
             {bill.bill_date && (
@@ -101,7 +115,7 @@ export default function ReviewPage() {
           </div>
         )}
 
-        {/* Reconciliation Warning Panel — non-negotiable per spec §13 */}
+        {/* Reconciliation Warning */}
         {showReconcileWarning && (
           <div className="reconcile-panel reconcile-warn animate-slide-up">
             <div className="flex items-start gap-3">
@@ -141,7 +155,7 @@ export default function ReviewPage() {
 
         {/* Other warnings */}
         {hasWarnings && bill.warnings.length > 0 && (
-          <div className="card p-4">
+          <div className="card p-4 animate-slide-up">
             <button
               id="btn-toggle-warnings"
               onClick={() => setShowWarnings((v) => !v)}
@@ -166,17 +180,15 @@ export default function ReviewPage() {
           </div>
         )}
 
-        {/* Line items table */}
+        {/* Line items */}
         <div className="card overflow-hidden">
           <div className="px-5 py-4 border-b border-stone-100">
             <h3 className="font-bold text-ink-900">Items</h3>
-            <p className="text-xs text-ink-400 mt-0.5">
-              Click any row to correct AI-extracted values
-            </p>
+            <p className="text-xs text-ink-400 mt-0.5">Click the edit icon to correct any value</p>
           </div>
 
           <div className="divide-y divide-stone-50">
-            {bill.line_items.map((item) => {
+            {bill.line_items.map((item, idx) => {
               const isEditing = editingId === item.id
               const nameConf = item.confidence?.name || 'medium'
               const priceConf = item.confidence?.unit_price || 'medium'
@@ -186,9 +198,10 @@ export default function ReviewPage() {
                 <div
                   key={item.id}
                   className={cn(
-                    'px-5 py-4 transition-colors',
+                    'px-5 py-4 transition-all duration-200',
                     isEditing ? 'bg-emerald-50/50' : 'hover:bg-stone-50/60'
                   )}
+                  style={{ animationDelay: `${idx * 40}ms` }}
                 >
                   {/* Row header */}
                   <div className="flex items-start gap-3">
@@ -204,7 +217,7 @@ export default function ReviewPage() {
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-ink-900 text-sm">{item.name}</p>
                           {item.user_edited && (
-                            <span className="text-xs text-emerald-600 font-medium">✏ Edited</span>
+                            <span className="text-xs text-emerald-600 font-medium bg-emerald-50 px-1.5 py-0.5 rounded">✏ Edited</span>
                           )}
                         </div>
                       )}
@@ -238,21 +251,12 @@ export default function ReviewPage() {
                     </button>
                   </div>
 
-                  {/* Quantity / Price / Total grid */}
+                  {/* Qty / Price / Total */}
                   <div className="grid grid-cols-3 gap-3 mt-3">
                     {[
-                      {
-                        label: 'Qty', field: 'quantity' as const,
-                        value: item.quantity, conf: item.confidence?.quantity,
-                      },
-                      {
-                        label: 'Unit Price', field: 'unit_price' as const,
-                        value: item.unit_price, conf: priceConf,
-                      },
-                      {
-                        label: 'Total', field: 'line_total' as const,
-                        value: item.line_total, conf: totalConf,
-                      },
+                      { label: 'Qty', field: 'quantity' as const, value: item.quantity, conf: item.confidence?.quantity },
+                      { label: 'Unit Price', field: 'unit_price' as const, value: item.unit_price, conf: priceConf },
+                      { label: 'Total', field: 'line_total' as const, value: item.line_total, conf: totalConf },
                     ].map(({ label, field, value, conf }) => (
                       <div key={field}>
                         <p className="text-xs text-ink-400 mb-1">{label}</p>
@@ -270,9 +274,7 @@ export default function ReviewPage() {
                               {field === 'quantity' ? (value || '—') : formatCurrency(value, bill.currency)}
                             </span>
                             {conf && (
-                              <span className={cn(confidenceBadgeClass(conf), 'text-[10px] w-fit')}>
-                                {conf}
-                              </span>
+                              <span className={cn(confidenceBadgeClass(conf), 'text-[10px] w-fit')}>{conf}</span>
                             )}
                           </div>
                         )}
@@ -280,18 +282,16 @@ export default function ReviewPage() {
                     ))}
                   </div>
 
-                  {/* Provenance tag */}
                   <p className="text-[10px] text-ink-300 mt-2">
                     {item.user_edited ? '✏ User corrected' : '🤖 AI extracted'}
                   </p>
 
-                  {/* Save button */}
                   {isEditing && (
                     <button
                       id={`btn-save-item-${item.id}`}
                       onClick={() => handleSaveEdit(item)}
                       disabled={saving}
-                      className="btn-primary w-full mt-3 py-2.5 text-sm"
+                      className="btn-primary w-full mt-3 py-2.5 text-sm animate-bounce-in"
                     >
                       <Save size={14} className="inline mr-1.5" />
                       {saving ? 'Saving...' : 'Save changes'}
@@ -304,9 +304,8 @@ export default function ReviewPage() {
         </div>
 
         {/* Bill summary */}
-        <div className="card p-5 space-y-3">
+        <div className="card p-5 space-y-3 animate-slide-up">
           <h3 className="font-bold text-ink-900 mb-4">Bill Summary</h3>
-
           <div className="space-y-2 text-sm">
             <SummaryRow label="Items subtotal" value={bill.subtotal_calculated} currency={bill.currency} />
             {parseFloat(bill.discount) > 0 && (
@@ -340,13 +339,13 @@ export default function ReviewPage() {
         </div>
 
         {error && (
-          <div className="px-4 py-3 bg-danger-50 border border-danger-200 rounded-xl text-danger-600 text-sm">
+          <div className="px-4 py-3 bg-danger-50 border border-danger-200 rounded-xl text-danger-600 text-sm animate-bounce-in">
             {error}
           </div>
         )}
       </div>
 
-      {/* Sticky bottom — Confirm gate */}
+      {/* Sticky bottom */}
       <div className="sticky-bottom">
         <button
           id="btn-confirm-bill"

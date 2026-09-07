@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { CheckCircle2, ChevronDown, ChevronUp, Copy, Receipt, Share2 } from 'lucide-react'
+import { CheckCircle2, ChevronDown, ChevronUp, Copy, Receipt, Share2, Sparkles } from 'lucide-react'
 import { getResult } from '../lib/api'
 import { formatCurrency, cn } from '../lib/utils'
+import StepProgress from '../components/StepProgress'
+import { SkeletonPersonCard, SkeletonSummary } from '../components/SkeletonCard'
 
 interface PersonResult {
   person_id: string
@@ -39,6 +41,55 @@ const PERSON_COLORS = [
   'bg-orange-500', 'bg-teal-500', 'bg-pink-500', 'bg-indigo-500',
 ]
 
+/** Animated number that counts up from 0 to target value */
+function AnimatedAmount({ value, currency = 'INR' }: { value: string; currency?: string }) {
+  const [display, setDisplay] = useState('0')
+  const targetRef = useRef(parseFloat(value) || 0)
+  const startRef = useRef<number | null>(null)
+  const rafRef = useRef<number | null>(null)
+  const DURATION = 900
+
+  useEffect(() => {
+    const target = targetRef.current
+    const animate = (timestamp: number) => {
+      if (!startRef.current) startRef.current = timestamp
+      const elapsed = timestamp - startRef.current
+      const progress = Math.min(elapsed / DURATION, 1)
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
+      const current = eased * target
+      setDisplay(formatCurrency(current.toFixed(2), currency))
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate)
+      } else {
+        setDisplay(formatCurrency(value, currency))
+      }
+    }
+    rafRef.current = requestAnimationFrame(animate)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+  }, [value, currency])
+
+  return <span className="tabular-nums">{display}</span>
+}
+
+/** Simple confetti burst (CSS only — emoji confetti) */
+function ConfettiBurst() {
+  const confetti = ['🎉', '✨', '🎊', '💫', '⭐', '🎈']
+  return (
+    <div className="flex justify-center gap-2 mb-4 pointer-events-none select-none">
+      {confetti.map((c, i) => (
+        <span
+          key={i}
+          className="text-2xl animate-confetti-drop"
+          style={{ animationDelay: `${i * 80}ms` }}
+        >
+          {c}
+        </span>
+      ))}
+    </div>
+  )
+}
+
 export default function ResultPage() {
   const { billId } = useParams<{ billId: string }>()
   const navigate = useNavigate()
@@ -66,7 +117,7 @@ export default function ResultPage() {
 
   const buildShareText = () => {
     if (!result) return ''
-    const lines = [`💰 Bill Split Summary\n`]
+    const lines = ['💰 Bill Split Summary\n']
     result.people.forEach((p) => {
       lines.push(`${p.name}: ${formatCurrency(p.total)}`)
     })
@@ -88,10 +139,20 @@ export default function ResultPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-50">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full border-2 border-emerald-200 border-t-emerald-500 animate-spin mx-auto mb-4" />
-          <p className="text-ink-500">Calculating shares...</p>
+      <div className="min-h-screen bg-surface-50 pb-8">
+        <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-stone-100 px-4 py-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="flex items-center gap-2 mb-3">
+              <Receipt className="text-emerald-600" size={20} />
+              <span className="font-bold text-lg text-ink-900">Split Summary</span>
+            </div>
+            <StepProgress />
+          </div>
+        </header>
+        <div className="max-w-2xl mx-auto px-4 pt-6 space-y-4">
+          <div className="skeleton h-12 rounded-xl w-full" />
+          {Array.from({ length: 3 }).map((_, i) => <SkeletonPersonCard key={i} />)}
+          <SkeletonSummary />
         </div>
       </div>
     )
@@ -111,33 +172,48 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 pb-24">
+    <div className="min-h-screen bg-surface-50 pb-24 page-enter">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-stone-100 px-4 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Receipt className="text-emerald-600" size={20} />
-            <span className="font-bold text-lg text-ink-900">Split Summary</span>
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-stone-100 px-4 py-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Receipt className="text-emerald-600" size={20} />
+              <span className="font-bold text-lg text-ink-900">Split Summary</span>
+            </div>
+            <button
+              id="btn-share-result"
+              onClick={handleShare}
+              className="btn-secondary text-sm px-4 py-2 flex items-center gap-2"
+              aria-label="Share split summary"
+            >
+              {copied ? <><Copy size={16} /> Copied!</> : <><Share2 size={16} /> Share</>}
+            </button>
           </div>
-          <button
-            id="btn-share-result"
-            onClick={handleShare}
-            className="btn-secondary text-sm px-4 py-2 flex items-center gap-2"
-            aria-label="Share split summary"
-          >
-            {copied ? <><Copy size={16} /> Copied!</> : <><Share2 size={16} /> Share</>}
-          </button>
+          <StepProgress />
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 pt-6 space-y-5">
-        {/* Reconciled badge */}
+      <div className="max-w-2xl mx-auto px-4 pt-6 space-y-4">
+        {/* Confetti + reconciled badge */}
         {result.reconciled && (
-          <div className="flex items-center gap-2 text-emerald-700 font-semibold text-sm bg-emerald-50 border border-emerald-200 px-4 py-3 rounded-xl animate-slide-up">
-            <CheckCircle2 size={18} />
-            Fully reconciled — every penny accounted for
+          <div className="animate-slide-up">
+            <ConfettiBurst />
+            <div className="flex items-center gap-2 text-emerald-700 font-semibold text-sm bg-emerald-50 border border-emerald-200 px-4 py-3 rounded-xl">
+              <CheckCircle2 size={18} />
+              Fully reconciled — every penny accounted for
+            </div>
           </div>
         )}
+
+        {/* Bill total hero */}
+        <div className="card p-6 text-center animate-scale-in">
+          <p className="text-xs text-ink-400 uppercase tracking-widest font-semibold mb-2">Total Bill</p>
+          <p className="text-4xl font-extrabold text-ink-900">
+            <AnimatedAmount value={result.final_bill_total} />
+          </p>
+          <p className="text-xs text-ink-400 mt-2">Split {result.people.length} ways</p>
+        </div>
 
         {/* Per-person cards */}
         {result.people.map((person, idx) => {
@@ -147,17 +223,21 @@ export default function ResultPage() {
           const hasSvc = parseFloat(person.service_charge_share) > 0
 
           return (
-            <div key={person.person_id} className="card overflow-hidden animate-slide-up">
+            <div
+              key={person.person_id}
+              className="card overflow-hidden"
+              style={{ animationDelay: `${idx * 60}ms` }}
+            >
               {/* Person header */}
               <button
                 id={`btn-expand-person-${person.person_id}`}
                 onClick={() => togglePerson(person.person_id)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-stone-50 transition-colors"
+                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-stone-50/70 transition-colors"
                 aria-expanded={isExpanded}
               >
                 <div className="flex items-center gap-3">
                   <div className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0',
+                    'w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0 shadow-sm',
                     PERSON_COLORS[idx % PERSON_COLORS.length]
                   )}>
                     {person.name[0].toUpperCase()}
@@ -170,30 +250,31 @@ export default function ResultPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <p className="money-large text-emerald-600">
-                    {formatCurrency(person.total)}
+                  <p className="text-2xl font-extrabold text-emerald-600 tabular-nums">
+                    <AnimatedAmount value={person.total} />
                   </p>
-                  {isExpanded ? (
-                    <ChevronUp size={18} className="text-ink-400 flex-shrink-0" />
-                  ) : (
-                    <ChevronDown size={18} className="text-ink-400 flex-shrink-0" />
-                  )}
+                  <div className={cn(
+                    'w-7 h-7 rounded-full flex items-center justify-center bg-stone-100 transition-transform duration-200',
+                    isExpanded ? 'rotate-180' : 'rotate-0'
+                  )}>
+                    <ChevronDown size={16} className="text-ink-400" />
+                  </div>
                 </div>
               </button>
 
               {/* Expanded breakdown */}
               {isExpanded && (
-                <div className="border-t border-stone-100 px-5 pb-4 space-y-1 animate-fade-in">
+                <div className="border-t border-stone-100 px-5 pb-4 animate-slide-up">
                   {/* Line items */}
                   {person.line_breakdown.length > 0 && (
                     <div className="pt-3">
                       <p className="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-2">Items</p>
                       {person.line_breakdown.map((line, li) => (
-                        <div key={li} className="flex justify-between text-sm py-1">
+                        <div key={li} className="flex justify-between text-sm py-1.5 border-b border-stone-50 last:border-0">
                           <span className="text-ink-700">
                             {line.item_name}
                             {parseFloat(line.allocated_quantity) < 1 && (
-                              <span className="text-ink-400 ml-1">×{line.allocated_quantity}</span>
+                              <span className="text-ink-400 ml-1 text-xs">×{line.allocated_quantity}</span>
                             )}
                           </span>
                           <span className="tabular-nums font-medium text-ink-900">
@@ -244,14 +325,16 @@ export default function ResultPage() {
                   </div>
 
                   {/* Total */}
-                  <div className="border-t border-stone-200 pt-3 flex justify-between items-center">
+                  <div className="border-t border-stone-200 pt-3 mt-1 flex justify-between items-center">
                     <span className="font-bold text-ink-900">Total</span>
-                    <span className="money-large text-emerald-600">{formatCurrency(person.total)}</span>
+                    <span className="text-xl font-extrabold text-emerald-600 tabular-nums">
+                      {formatCurrency(person.total)}
+                    </span>
                   </div>
 
-                  {/* Provenance note */}
-                  <p className="text-[10px] text-ink-300 pt-1">
-                    🧮 All shares calculated deterministically — never by AI
+                  <p className="text-[10px] text-ink-300 pt-2 flex items-center gap-1">
+                    <Sparkles size={10} />
+                    All shares calculated deterministically — never by AI
                   </p>
                 </div>
               )}
@@ -259,8 +342,8 @@ export default function ResultPage() {
           )
         })}
 
-        {/* Whole-bill reconciliation panel */}
-        <div className="card overflow-hidden">
+        {/* Reconciliation panel */}
+        <div className="card overflow-hidden animate-slide-up">
           <button
             id="btn-toggle-reconciliation"
             onClick={() => setShowReconciliation((v) => !v)}
@@ -274,7 +357,7 @@ export default function ResultPage() {
           </button>
 
           {showReconciliation && (
-            <div className="border-t border-stone-100 px-5 py-4 space-y-2 animate-fade-in">
+            <div className="border-t border-stone-100 px-5 py-4 space-y-2 animate-slide-up">
               <SummaryRow label="Items subtotal" value={result.items_subtotal} />
               {parseFloat(result.discount_total) > 0 && (
                 <SummaryRow label="Total discount" value={`-${result.discount_total}`} green />
@@ -305,7 +388,7 @@ export default function ResultPage() {
 
               {result.rounding_log.length > 0 && (
                 <div className="pt-3">
-                  <p className="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-2">Rounding adjustments</p>
+                  <p className="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-2">Rounding log</p>
                   {result.rounding_log.map((entry, i) => (
                     <p key={i} className="text-xs text-ink-400">{entry}</p>
                   ))}
@@ -315,14 +398,15 @@ export default function ResultPage() {
           )}
         </div>
 
-        {/* Start over */}
-        <div className="pb-8 text-center">
+        {/* Split another */}
+        <div className="pb-8 text-center animate-fade-in">
           <button
             id="btn-new-bill"
             onClick={() => navigate('/')}
-            className="btn-ghost text-sm"
+            className="btn-ghost text-sm group"
           >
-            Split another bill →
+            Split another bill
+            <span className="ml-1 group-hover:translate-x-1 transition-transform inline-block">→</span>
           </button>
         </div>
       </div>

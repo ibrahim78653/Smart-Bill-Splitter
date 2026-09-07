@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Calculator, ChevronDown, ChevronUp, MessageSquare, Users } from 'lucide-react'
+import { Calculator, ChevronDown, ChevronUp, MessageSquare, Users, CheckCircle2 } from 'lucide-react'
 import { saveAssignments, calculateBill, parseNLAssignment } from '../lib/api'
 import { useBillStore } from '../store/billStore'
 import type { Assignment, PersonAllocation, LineItem } from '../store/billStore'
 import { formatCurrency, cn } from '../lib/utils'
+import StepProgress from '../components/StepProgress'
 
 const PERSON_COLORS = [
-  { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', active: 'bg-emerald-600 text-white border-emerald-600' },
-  { bg: 'bg-sky-100', text: 'text-sky-700', border: 'border-sky-300', active: 'bg-sky-500 text-white border-sky-500' },
-  { bg: 'bg-violet-100', text: 'text-violet-700', border: 'border-violet-300', active: 'bg-violet-600 text-white border-violet-600' },
-  { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-300', active: 'bg-rose-500 text-white border-rose-500' },
-  { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300', active: 'bg-orange-500 text-white border-orange-500' },
-  { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-300', active: 'bg-teal-600 text-white border-teal-600' },
-  { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-300', active: 'bg-pink-500 text-white border-pink-500' },
-  { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-300', active: 'bg-indigo-600 text-white border-indigo-600' },
-  { bg: 'bg-lime-100', text: 'text-lime-700', border: 'border-lime-300', active: 'bg-lime-600 text-white border-lime-600' },
-  { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300', active: 'bg-amber-500 text-white border-amber-500' },
+  { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', active: 'bg-emerald-600 text-white border-emerald-600', dot: 'bg-emerald-500' },
+  { bg: 'bg-sky-100', text: 'text-sky-700', border: 'border-sky-300', active: 'bg-sky-500 text-white border-sky-500', dot: 'bg-sky-500' },
+  { bg: 'bg-violet-100', text: 'text-violet-700', border: 'border-violet-300', active: 'bg-violet-600 text-white border-violet-600', dot: 'bg-violet-500' },
+  { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-300', active: 'bg-rose-500 text-white border-rose-500', dot: 'bg-rose-500' },
+  { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300', active: 'bg-orange-500 text-white border-orange-500', dot: 'bg-orange-500' },
+  { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-300', active: 'bg-teal-600 text-white border-teal-600', dot: 'bg-teal-500' },
+  { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-300', active: 'bg-pink-500 text-white border-pink-500', dot: 'bg-pink-500' },
+  { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-300', active: 'bg-indigo-600 text-white border-indigo-600', dot: 'bg-indigo-500' },
+  { bg: 'bg-lime-100', text: 'text-lime-700', border: 'border-lime-300', active: 'bg-lime-600 text-white border-lime-600', dot: 'bg-lime-500' },
+  { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300', active: 'bg-amber-500 text-white border-amber-500', dot: 'bg-amber-500' },
 ]
 
 export default function AssignmentPage() {
@@ -31,8 +32,8 @@ export default function AssignmentPage() {
   const [nlLoading, setNlLoading] = useState(false)
   const [showNl, setShowNl] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set())
 
-  // Initialize empty assignments
   useEffect(() => {
     if (bill && people.length > 0 && assignments.length === 0) {
       const empty: Assignment[] = bill.line_items.map((item) => ({
@@ -57,10 +58,10 @@ export default function AssignmentPage() {
     return Math.round((total - allocated) * 100) / 100
   }
 
-  // Toggle person for an item (simple equal-split toggle)
   const togglePerson = (itemId: string, personId: string, itemQty: string) => {
     const allocs = getAllocForItem(itemId)
     const isAssigned = allocs.some((a) => a.person_id === personId)
+    const wasComplete = Math.abs(getRemaining({ quantity: itemQty } as LineItem)) < 0.01
 
     let newAllocs: PersonAllocation[]
     if (isAssigned) {
@@ -68,11 +69,9 @@ export default function AssignmentPage() {
     } else {
       newAllocs = [...allocs, { person_id: personId, quantity: '0' }]
     }
-    // Re-distribute quantity equally
     if (newAllocs.length > 0) {
       const equalShare = (parseFloat(itemQty) / newAllocs.length).toFixed(4)
       newAllocs = newAllocs.map((a) => ({ ...a, quantity: equalShare }))
-      // Fix rounding on last person
       const currentSum = newAllocs.reduce((s, a) => s + parseFloat(a.quantity), 0)
       const diff = parseFloat(itemQty) - currentSum
       if (Math.abs(diff) > 0.0001) {
@@ -82,9 +81,15 @@ export default function AssignmentPage() {
       }
     }
     updateAssignment(itemId, newAllocs)
+
+    // Flash "just completed" animation
+    const newRemaining = Math.abs(parseFloat(itemQty) - newAllocs.reduce((s, a) => s + parseFloat(a.quantity), 0))
+    if (!wasComplete && newRemaining < 0.01) {
+      setJustCompleted((prev) => new Set([...prev, itemId]))
+      setTimeout(() => setJustCompleted((prev) => { const n = new Set(prev); n.delete(itemId); return n }), 1000)
+    }
   }
 
-  // Assign to everyone
   const assignEveryone = (item: LineItem) => {
     const equalShare = (parseFloat(item.quantity) / people.length).toFixed(4)
     const allocs: PersonAllocation[] = people.map((p, i) => ({
@@ -96,13 +101,11 @@ export default function AssignmentPage() {
     updateAssignment(item.id, allocs)
   }
 
-  // NL assist
   const handleNlParse = async () => {
     if (!billId || !nlInstruction.trim()) return
     setNlLoading(true)
     try {
       const result = await parseNLAssignment(billId, nlInstruction)
-      // Apply proposal to assignments
       result.proposal.forEach((p: any) => {
         const allocs: PersonAllocation[] = p.allocations.map((a: any) => ({
           person_id: a.person_id,
@@ -119,10 +122,10 @@ export default function AssignmentPage() {
     }
   }
 
-  const allAssigned = bill?.line_items.every((item) => {
-    const remaining = getRemaining(item)
-    return Math.abs(remaining) < 0.01
-  })
+  const doneCount = bill?.line_items.filter((i) => Math.abs(getRemaining(i)) < 0.01).length ?? 0
+  const totalCount = bill?.line_items.length ?? 0
+  const allAssigned = doneCount === totalCount && totalCount > 0
+  const progressPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 
   const handleCalculate = async () => {
     if (!billId) return
@@ -145,42 +148,56 @@ export default function AssignmentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 pb-28">
+    <div className="min-h-screen bg-surface-50 pb-28 page-enter">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-stone-100 px-4 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              id="btn-back-to-people"
-              onClick={() => navigate(`/people/${billId}`)}
-              className="btn-ghost px-2 py-2"
-              aria-label="Back"
-            >←</button>
-            <div>
-              <div className="flex items-center gap-2">
-                <Users className="text-emerald-600" size={18} />
-                <span className="font-bold text-ink-900">Assign Items</span>
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-stone-100 px-4 py-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <button
+                id="btn-back-to-people"
+                onClick={() => navigate(`/people/${billId}`)}
+                className="btn-ghost px-2 py-2"
+                aria-label="Back"
+              >←</button>
+              <div>
+                <div className="flex items-center gap-2">
+                  <Users className="text-emerald-600" size={18} />
+                  <span className="font-bold text-ink-900">Assign Items</span>
+                </div>
+                <p className="text-xs text-ink-400">Tap names to assign · Long-press to split</p>
               </div>
-              <p className="text-xs text-ink-400">Tap names to assign • Long-press to split</p>
+            </div>
+            {/* Progress ring */}
+            <div className="flex flex-col items-end gap-1">
+              <p className="text-xs font-bold text-ink-700 tabular-nums">
+                {doneCount}/{totalCount}
+                <span className="text-ink-400 font-normal ml-1">done</span>
+              </p>
+              <div className="w-24 h-2 bg-stone-100 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-all duration-500 ease-out',
+                    allAssigned ? 'bg-emerald-500' : 'bg-amber-400'
+                  )}
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
             </div>
           </div>
-          {/* Progress */}
-          <div className="text-right">
-            <p className="text-xs text-ink-400 font-medium">
-              {bill.line_items.filter((i) => Math.abs(getRemaining(i)) < 0.01).length}/
-              {bill.line_items.length} done
-            </p>
-            <div className="w-20 h-1.5 bg-stone-100 rounded-full mt-1 overflow-hidden">
-              <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-                style={{
-                  width: `${(bill.line_items.filter((i) => Math.abs(getRemaining(i)) < 0.01).length / bill.line_items.length) * 100}%`
-                }}
-              />
-            </div>
-          </div>
+          <StepProgress />
         </div>
       </header>
+
+      {/* All done banner */}
+      {allAssigned && (
+        <div className="max-w-2xl mx-auto px-4 pt-4">
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 animate-bounce-in">
+            <CheckCircle2 className="text-emerald-600" size={18} />
+            <span className="text-emerald-700 font-semibold text-sm">All items assigned! Ready to calculate.</span>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-2xl mx-auto px-4 pt-4 space-y-3">
         {/* NL Assist */}
@@ -193,12 +210,12 @@ export default function AssignmentPage() {
             <div className="flex items-center gap-2">
               <MessageSquare className="text-emerald-600" size={18} />
               <span className="font-semibold text-sm text-ink-900">Smart assignment</span>
-              <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">AI Assist</span>
+              <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">AI Assist</span>
             </div>
             {showNl ? <ChevronUp size={16} className="text-ink-400" /> : <ChevronDown size={16} className="text-ink-400" />}
           </button>
           {showNl && (
-            <div className="px-5 pb-4 space-y-3 border-t border-stone-50">
+            <div className="px-5 pb-4 space-y-3 border-t border-stone-50 animate-slide-up">
               <p className="text-xs text-ink-400 mt-3">
                 Describe who had what in plain English. This creates a <strong>proposal</strong> — you'll still review it.
               </p>
@@ -222,45 +239,49 @@ export default function AssignmentPage() {
         </div>
 
         {/* Line items */}
-        {bill.line_items.map((item) => {
+        {bill.line_items.map((item, itemIdx) => {
           const remaining = getRemaining(item)
           const isComplete = Math.abs(remaining) < 0.01
           const allocs = getAllocForItem(item.id)
           const isExpanded = expandedItems.has(item.id)
+          const justDone = justCompleted.has(item.id)
 
           return (
             <div
               key={item.id}
               className={cn(
-                'card overflow-hidden transition-all',
-                isComplete ? 'border-emerald-100' : ''
+                'card overflow-hidden transition-all duration-300',
+                isComplete ? 'border-emerald-200 bg-white' : 'border-stone-100',
+                justDone ? 'shadow-glow-emerald' : ''
               )}
+              style={{ animationDelay: `${itemIdx * 30}ms` }}
             >
-              {/* Item header */}
               <div className="px-5 py-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       {isComplete && (
-                        <span className="text-emerald-500" aria-label="Fully assigned">✓</span>
+                        <CheckCircle2
+                          className={cn('text-emerald-500 flex-shrink-0', justDone ? 'animate-check-pop' : '')}
+                          size={16}
+                          aria-label="Fully assigned"
+                        />
                       )}
                       <p className="font-semibold text-ink-900 text-sm">{item.name}</p>
                     </div>
                     <p className="text-xs text-ink-400 mt-0.5">
-                      Qty: {item.quantity} ·{' '}
-                      {formatCurrency(item.line_total, bill.currency)}
+                      Qty: {item.quantity} · {formatCurrency(item.line_total, bill.currency)}
                     </p>
                   </div>
-                  {/* Remaining indicator */}
                   <div className={cn(
-                    'flex-shrink-0 ml-3 px-2.5 py-1 rounded-lg text-xs font-semibold',
+                    'flex-shrink-0 ml-3 px-2.5 py-1 rounded-lg text-xs font-bold transition-all duration-300',
                     isComplete
                       ? 'bg-emerald-100 text-emerald-700'
                       : remaining > 0
                       ? 'bg-amber-100 text-amber-700'
                       : 'bg-danger-100 text-danger-600'
                   )}>
-                    {isComplete ? '✓ Done' : `${remaining > 0 ? remaining : 'Over'}`}
+                    {isComplete ? '✓ Done' : remaining > 0 ? `${remaining} left` : 'Over!'}
                   </div>
                 </div>
 
@@ -275,12 +296,15 @@ export default function AssignmentPage() {
                         id={`btn-assign-${item.id}-${person.id}`}
                         onClick={() => togglePerson(item.id, person.id, item.quantity)}
                         className={cn(
-                          'chip text-xs font-semibold border transition-all',
-                          isActive ? color.active : `${color.bg} ${color.text} ${color.border} hover:opacity-80`
+                          'chip text-xs font-semibold border transition-all duration-150',
+                          isActive
+                            ? `${color.active} scale-100 shadow-sm`
+                            : `${color.bg} ${color.text} ${color.border} hover:opacity-80 active:scale-95`
                         )}
                         aria-pressed={isActive}
                         aria-label={`Assign to ${person.name}`}
                       >
+                        {isActive && <span className={cn('w-1.5 h-1.5 rounded-full bg-white/60 mr-1.5')} />}
                         {person.name}
                       </button>
                     )
@@ -303,20 +327,24 @@ export default function AssignmentPage() {
                       next.has(item.id) ? next.delete(item.id) : next.add(item.id)
                       return next
                     })}
-                    className="text-xs text-emerald-600 font-medium mt-1 hover:underline"
+                    className="text-xs text-emerald-600 font-medium mt-1 hover:underline flex items-center gap-1"
                   >
-                    {isExpanded ? '▲ Hide fractions' : '▼ Adjust quantities'}
+                    {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    {isExpanded ? 'Hide fractions' : 'Adjust quantities'}
                   </button>
                 )}
 
                 {/* Fractional quantity inputs */}
                 {isExpanded && (
-                  <div className="mt-3 space-y-2 pt-3 border-t border-stone-50">
+                  <div className="mt-3 space-y-2 pt-3 border-t border-stone-50 animate-slide-up">
                     <p className="text-xs text-ink-400 font-medium">Exact quantities (must sum to {item.quantity})</p>
                     {allocs.map((alloc) => {
                       const person = people.find((p) => p.id === alloc.person_id)
+                      const pIdx = people.findIndex((p) => p.id === alloc.person_id)
+                      const color = PERSON_COLORS[pIdx % PERSON_COLORS.length]
                       return (
                         <div key={alloc.person_id} className="flex items-center gap-3">
+                          <div className={cn('w-6 h-6 rounded-full flex-shrink-0', color.active.split(' ')[0])} />
                           <span className="text-sm text-ink-700 w-24 truncate">{person?.name}</span>
                           <input
                             id={`input-qty-${item.id}-${alloc.person_id}`}
@@ -346,7 +374,7 @@ export default function AssignmentPage() {
         })}
 
         {error && (
-          <div className="px-4 py-3 bg-danger-50 border border-danger-200 rounded-xl text-danger-600 text-sm">
+          <div className="px-4 py-3 bg-danger-50 border border-danger-200 rounded-xl text-danger-600 text-sm animate-bounce-in">
             {error}
           </div>
         )}
@@ -357,7 +385,7 @@ export default function AssignmentPage() {
         <div className="flex-1">
           {!allAssigned && (
             <p className="text-xs text-amber-600 font-medium mb-2 text-center">
-              ⚠ Some items still need to be assigned
+              ⚠ {totalCount - doneCount} item{totalCount - doneCount !== 1 ? 's' : ''} still need to be assigned
             </p>
           )}
           <button
