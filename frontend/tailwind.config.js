@@ -75,6 +75,8 @@ export default {
         'ring-spin-slow': 'ringSpin 2.4s linear infinite',
         'confetti-drop': 'confettiDrop 0.6s ease-out forwards',
         'check-pop': 'checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'slide-from-right': 'slideFromRight 0.3s ease-out',
+        'slide-from-left': 'slideFromLeft 0.3s ease-out',
       },
       keyframes: {
         fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
@@ -108,6 +110,14 @@ export default {
           '0%': { transform: 'scale(0) rotate(-45deg)', opacity: '0' },
           '70%': { transform: 'scale(1.2) rotate(5deg)', opacity: '1' },
           '100%': { transform: 'scale(1) rotate(0deg)', opacity: '1' },
+        },
+        slideFromRight: {
+          from: { opacity: '0', transform: 'translateX(24px)' },
+          to:   { opacity: '1', transform: 'translateX(0)' },
+        },
+        slideFromLeft: {
+          from: { opacity: '0', transform: 'translateX(-24px)' },
+          to:   { opacity: '1', transform: 'translateX(0)' },
         },
       },
     },

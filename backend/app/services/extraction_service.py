@@ -31,25 +31,21 @@ async def extract_bill(
     4. Build confirmed Bill model with computed fields
     5. Deduplicate any cross-image duplicate line items
     """
-    # Step 1: Preprocess
-    processed_images: list[bytes] = []
+    # Step 1: Image Quality Assessment
     all_warnings: list[str] = list(existing_bill.warnings)
 
     for idx, (img_bytes, mime) in enumerate(zip(image_bytes_list, mime_types)):
         try:
-            processed, quality_warnings = image_service.preprocess_image(img_bytes)
-            processed_images.append(processed)
+            quality_warnings = image_service.assess_quality(img_bytes)
             for w in quality_warnings:
                 all_warnings.append(f"Image {idx + 1}: {w}")
         except Exception as e:
-            logger.warning("Image preprocessing failed for image %d: %s", idx, e)
-            processed_images.append(img_bytes)
-            all_warnings.append(f"Image {idx + 1}: Preprocessing skipped ({e})")
+            logger.warning("Image quality assessment failed for image %d: %s", idx, e)
 
-    # Step 2: Gemini extraction (hash-based idempotency)
+    # Step 2: Gemini Inbuilt Multimodal OCR Extraction (hash-based idempotency)
     image_hash = compute_image_hash(b"".join(image_bytes_list))
     raw_data = await gemini_service.extract_bill_from_images(
-        processed_images, mime_types, image_hash
+        image_bytes_list, mime_types, image_hash
     )
 
     # Step 3: Validate through Pydantic (untrusted → trusted)

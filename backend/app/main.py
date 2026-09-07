@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import bills, people
 from app.core.config import get_settings
@@ -47,6 +48,10 @@ def create_app() -> FastAPI:
     # Register routers
     app.include_router(bills.router)
     app.include_router(people.router)
+
+    # Static file serving for uploaded bill images
+    settings.image_storage_path.mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=str(settings.image_storage_path)), name="uploads")
 
     @app.get("/api/health")
     async def health():

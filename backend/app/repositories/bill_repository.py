@@ -36,16 +36,19 @@ async def close_db() -> None:
 # ── Serialization helpers ─────────────────────────────────────────────────────
 
 def _serialize(obj: Any) -> Any:
-    """Convert Pydantic models to MongoDB-safe dicts (Decimal → str)."""
+    """Convert Pydantic models to MongoDB-safe dicts (Decimal, date → str)."""
     from decimal import Decimal
+    from datetime import date, datetime
     if isinstance(obj, Decimal):
         return str(obj)
-    if isinstance(obj, dict):
-        return {k: _serialize(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_serialize(i) for i in obj]
+    if isinstance(obj, date) and not isinstance(obj, datetime):
+        return obj.isoformat()
     if hasattr(obj, "model_dump"):
         return _serialize(obj.model_dump())
+    if isinstance(obj, dict):
+        return {k: _serialize(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [_serialize(i) for i in obj]
     return obj
 
 

@@ -1,6 +1,6 @@
 /** StepProgress — sticky top breadcrumb navigation showing workflow progress */
 import { useLocation } from 'react-router-dom'
-import { CheckCircle2, Receipt } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import { cn } from '../lib/utils'
 
 const STEPS = [
@@ -18,9 +18,8 @@ export default function StepProgress() {
   return (
     <div className="flex items-center gap-1 py-2 px-1" role="navigation" aria-label="Progress">
       {STEPS.map((step, idx) => {
-        const isDone    = idx < currentIndex
-        const isActive  = idx === currentIndex
-        const isPending = idx > currentIndex
+        const isDone   = idx < currentIndex
+        const isActive = idx === currentIndex
 
         return (
           <div key={step.id} className="flex items-center gap-1 flex-1 last:flex-none">

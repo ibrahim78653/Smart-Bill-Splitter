@@ -266,4 +266,12 @@
   .delay-300 { animation-delay: 300ms; }
   .delay-375 { animation-delay: 375ms; }
   .delay-450 { animation-delay: 450ms; }
+
+  /* Wizard step direction transitions */
+  .animate-slide-from-right {
+    animation: slideFromRight 0.3s ease-out;
+  }
+  .animate-slide-from-left {
+    animation: slideFromLeft 0.3s ease-out;
+  }
 }

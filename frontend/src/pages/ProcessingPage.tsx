@@ -27,7 +27,7 @@ const TIPS = [
 export default function ProcessingPage() {
   const { billId } = useParams<{ billId: string }>()
   const navigate = useNavigate()
-  const { setBill } = useBillStore()
+  const { setBill, setCurrentStep } = useBillStore()
   const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS)
   const [error, setError] = useState<string | null>(null)
   const [tipIndex, setTipIndex] = useState(0)
@@ -69,7 +69,8 @@ export default function ProcessingPage() {
 
         setTimeout(() => {
           markAllDone()
-          setTimeout(() => navigate(`/review/${billId}`), 600)
+          setCurrentStep(1)
+          setTimeout(() => navigate(`/wizard/${billId}`), 600)
         }, 600)
       } catch (err: any) {
         setError(err.message)
