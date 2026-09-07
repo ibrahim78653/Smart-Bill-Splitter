@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: #faf9f7;
+    --color-surface: #ffffff;
+    --color-border: #e8e6e0;
+    --color-ink: #1a1917;
+    --color-ink-muted: #6b6860;
+    --color-accent: #059669;
+    --color-accent-light: #d1fae5;
+    --color-warning: #d97706;
+    --color-warning-light: #fef3c7;
+    --color-danger: #dc2626;
+    --color-danger-light: #fee2e2;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* Card surfaces */
+  .card {
+    @apply bg-white rounded-2xl border border-stone-100 shadow-card;
+  }
+
+  .card-elevated {
+    @apply bg-white rounded-2xl border border-stone-100 shadow-card-elevated;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold
+           px-5 py-3 rounded-xl transition-all duration-150 ease-out
+           focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed
+           shadow-sm hover:shadow-md active:shadow-none;
+  }
+
+  .btn-secondary {
+    @apply bg-stone-100 hover:bg-stone-200 active:bg-stone-300 text-ink-700 font-semibold
+           px-5 py-3 rounded-xl transition-all duration-150 ease-out
+           focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply text-ink-500 hover:text-ink-900 hover:bg-stone-100 font-medium
+           px-4 py-2 rounded-lg transition-all duration-150 ease-out
+           focus:outline-none focus:ring-2 focus:ring-stone-300;
+  }
+
+  .btn-danger {
+    @apply bg-danger-600 hover:bg-danger-700 text-white font-semibold
+           px-5 py-3 rounded-xl transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2;
+  }
+
+  /* Form inputs */
+  .input-field {
+    @apply w-full bg-white border border-stone-200 rounded-xl px-4 py-3
+           text-ink-900 placeholder-ink-300 text-sm
+           focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent
+           transition-all duration-150;
+  }
+
+  /* Confidence badges */
+  .badge-high {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
+           bg-emerald-100 text-emerald-700;
+  }
+
+  .badge-medium {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
+           bg-amber-100 text-amber-700;
+  }
+
+  .badge-low {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
+           bg-danger-100 text-danger-600;
+  }
+
+  /* Status chips */
+  .chip {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+           border transition-all duration-150 cursor-pointer select-none;
+  }
+
+  .chip-selected {
+    @apply bg-emerald-600 border-emerald-600 text-white;
+  }
+
+  .chip-unselected {
+    @apply bg-white border-stone-200 text-ink-700 hover:border-emerald-400 hover:text-emerald-700;
+  }
+
+  /* Processing steps */
+  .step-done {
+    @apply text-emerald-600;
+  }
+
+  .step-active {
+    @apply text-amber-600 animate-pulse-soft;
+  }
+
+  .step-pending {
+    @apply text-ink-300;
+  }
+
+  /* Reconciliation panel */
+  .reconcile-panel {
+    @apply rounded-2xl p-5 border;
+  }
+
+  .reconcile-ok {
+    @apply bg-emerald-50 border-emerald-200;
+  }
+
+  .reconcile-warn {
+    @apply bg-amber-50 border-amber-200;
+  }
+
+  .reconcile-error {
+    @apply bg-danger-50 border-danger-200;
+  }
+
+  /* Money display */
+  .money-display {
+    @apply font-semibold tabular-nums;
+  }
+
+  .money-large {
+    @apply text-2xl font-bold tabular-nums text-ink-900;
+  }
+
+  /* Sticky bottom bar (mobile) */
+  .sticky-bottom {
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-stone-100
+           px-4 py-3 flex gap-3 z-50 shadow-card-elevated;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Focus visible for accessibility */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2;
+  }
+
+  /* Smooth scrolling */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+}
