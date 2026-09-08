@@ -5,6 +5,7 @@ import { getResult } from '../lib/api'
 import { formatCurrency, cn } from '../lib/utils'
 import StepProgress from '../components/StepProgress'
 import { SkeletonPersonCard, SkeletonSummary } from '../components/SkeletonCard'
+import wizardBg from '../assets/wizard-bg.png'
 
 interface PersonResult {
   person_id: string
@@ -172,7 +173,13 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 pb-24 page-enter">
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed pb-24 page-enter"
+      style={{
+        backgroundImage: `url(${wizardBg})`,
+        backgroundAttachment: 'fixed',
+      }}
+    >
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-stone-100 px-4 py-4">
         <div className="max-w-2xl mx-auto">

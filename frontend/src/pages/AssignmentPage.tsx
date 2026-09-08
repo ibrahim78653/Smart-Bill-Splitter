@@ -6,6 +6,7 @@ import { useBillStore } from '../store/billStore'
 import type { Assignment, PersonAllocation, LineItem } from '../store/billStore'
 import { formatCurrency, cn } from '../lib/utils'
 import StepProgress from '../components/StepProgress'
+import wizardBg from '../assets/wizard-bg.png'
 
 const PERSON_COLORS = [
   { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', active: 'bg-emerald-600 text-white border-emerald-600', dot: 'bg-emerald-500' },
@@ -148,7 +149,13 @@ export default function AssignmentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 pb-28 page-enter">
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed pb-28 page-enter"
+      style={{
+        backgroundImage: `url(${wizardBg})`,
+        backgroundAttachment: 'fixed',
+      }}
+    >
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-stone-100 px-4 py-4">
         <div className="max-w-2xl mx-auto">

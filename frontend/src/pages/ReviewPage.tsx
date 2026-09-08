@@ -10,6 +10,7 @@ import { updateBill, confirmBill } from '../lib/api'
 import { formatCurrency, confidenceBadgeClass, confidenceLabel, cn } from '../lib/utils'
 import StepProgress from '../components/StepProgress'
 import { SkeletonLineItem, SkeletonSummary } from '../components/SkeletonCard'
+import wizardBg from '../assets/wizard-bg.png'
 
 export default function ReviewPage() {
   const { billId } = useParams<{ billId: string }>()
@@ -25,7 +26,13 @@ export default function ReviewPage() {
 
   if (!bill) {
     return (
-      <div className="min-h-screen bg-surface-50 pb-24">
+      <div
+        className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed pb-24"
+        style={{
+          backgroundImage: `url(${wizardBg})`,
+          backgroundAttachment: 'fixed',
+        }}
+      >
         <header className="sticky top-0 z-40 bg-white border-b border-stone-100 px-4 py-4">
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center gap-2 mb-3">
@@ -78,7 +85,13 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 pb-24 page-enter">
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed pb-24 page-enter"
+      style={{
+        backgroundImage: `url(${wizardBg})`,
+        backgroundAttachment: 'fixed',
+      }}
+    >
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-stone-100 px-4 py-4">
         <div className="max-w-3xl mx-auto">

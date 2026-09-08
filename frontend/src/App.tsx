@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import IntroPage from './pages/IntroPage'
 import LandingPage from './pages/LandingPage'
 import ProcessingPage from './pages/ProcessingPage'
 import WizardPage from './pages/WizardPage'
+import ErrorBoundary from './components/ErrorBoundary'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -11,23 +12,30 @@ const queryClient = new QueryClient({
   },
 })
 
+function WizardRedirect() {
+  const { billId } = useParams<{ billId: string }>()
+  return <Navigate to={billId ? `/wizard/${billId}` : '/'} replace />
+}
+
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<IntroPage />} />
-          <Route path="/upload" element={<LandingPage />} />
-          <Route path="/processing/:billId" element={<ProcessingPage />} />
-          <Route path="/wizard/:billId" element={<WizardPage />} />
-          {/* Legacy redirects — keep URLs working if someone has an old link */}
-          <Route path="/review/:billId" element={<Navigate to="/" replace />} />
-          <Route path="/people/:billId" element={<Navigate to="/" replace />} />
-          <Route path="/assign/:billId" element={<Navigate to="/" replace />} />
-          <Route path="/result/:billId" element={<Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<IntroPage />} />
+            <Route path="/upload" element={<LandingPage />} />
+            <Route path="/processing/:billId" element={<ProcessingPage />} />
+            <Route path="/wizard/:billId" element={<WizardPage />} />
+            {/* Legacy route redirects -> seamlessly redirect to wizard with billId */}
+            <Route path="/review/:billId" element={<WizardRedirect />} />
+            <Route path="/people/:billId" element={<WizardRedirect />} />
+            <Route path="/assign/:billId" element={<WizardRedirect />} />
+            <Route path="/result/:billId" element={<WizardRedirect />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }

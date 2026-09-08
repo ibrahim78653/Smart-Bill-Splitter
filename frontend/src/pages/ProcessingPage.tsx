@@ -4,6 +4,7 @@ import { CheckCircle2, Receipt } from 'lucide-react'
 import { extractBill, verifyBill, getBill } from '../lib/api'
 import { useBillStore } from '../store/billStore'
 import { cn } from '../lib/utils'
+import wizardBg from '../assets/wizard-bg.png'
 
 type StepStatus = 'done' | 'active' | 'pending'
 type Step = { id: string; label: string; emoji: string; status: StepStatus }
@@ -85,12 +86,13 @@ export default function ProcessingPage() {
   const progressPct = Math.round((doneCount / steps.length) * 100)
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden bg-white">
-      {/* Background blobs */}
-      <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #7c3aed 0%, transparent 70%)' }} />
-      <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full opacity-15 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #a855f7 0%, transparent 70%)' }} />
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden bg-cover bg-center bg-no-repeat bg-fixed"
+      style={{
+        backgroundImage: `url(${wizardBg})`,
+        backgroundAttachment: 'fixed',
+      }}
+    >
 
       {/* Logo */}
       <div className="flex items-center gap-2.5 mb-10 animate-fade-in cursor-pointer" onClick={() => navigate('/')}>

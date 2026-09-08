@@ -107,12 +107,12 @@ async def extract_bill(
         (item.line_total or Decimal("0")) for item in line_items
     )
 
-    # Taxes
+    # Taxes (round tax amount to integer value)
     taxes: list[Tax] = [
         Tax(
             name=t.name,
             rate=t.rate,
-            amount=t.amount,
+            amount=Decimal(str(round(t.amount))) if t.amount is not None else Decimal("0"),
             confidence=t.confidence,
         )
         for t in draft.taxes

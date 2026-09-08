@@ -199,7 +199,7 @@ async def update_bill(bill_id: str, body: BillUpdateRequest):
             Tax(
                 name=t["name"],
                 rate=Decimal(str(t["rate"])) if t.get("rate") else None,
-                amount=Decimal(str(t["amount"])),
+                amount=Decimal(str(round(float(t["amount"])))),
                 confidence=t.get("confidence", "medium"),
             )
             for t in body.taxes

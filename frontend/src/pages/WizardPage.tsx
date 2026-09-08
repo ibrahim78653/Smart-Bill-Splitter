@@ -14,6 +14,7 @@ import Step3Assign from './wizard/Step3Assign'
 import Step4Summary from './wizard/Step4Summary'
 import { getBill } from '../lib/api'
 import { cn } from '../lib/utils'
+import wizardBg from '../assets/wizard-bg.png'
 
 export default function WizardPage() {
   const { billId } = useParams<{ billId: string }>()
@@ -53,7 +54,13 @@ export default function WizardPage() {
     : 'animate-slide-from-left'
 
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed"
+      style={{
+        backgroundImage: `url(${wizardBg})`,
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <WizardHeader
         onStepClick={(step) => {
           if (step < currentStep) goTo(step)
