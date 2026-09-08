@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import IntroPage from './pages/IntroPage'
 import LandingPage from './pages/LandingPage'
 import ProcessingPage from './pages/ProcessingPage'
 import WizardPage from './pages/WizardPage'
@@ -15,7 +16,8 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<IntroPage />} />
+          <Route path="/upload" element={<LandingPage />} />
           <Route path="/processing/:billId" element={<ProcessingPage />} />
           <Route path="/wizard/:billId" element={<WizardPage />} />
           {/* Legacy redirects — keep URLs working if someone has an old link */}

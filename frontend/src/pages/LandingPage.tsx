@@ -56,52 +56,61 @@ export default function LandingPage() {
 
   const FEATURES = [
     {
-      icon: <Sparkles size={22} className="text-emerald-600" />,
-      bg: 'bg-emerald-50',
+      icon: <Sparkles size={22} className="text-purple-600" />,
+      bg: 'bg-purple-50',
       title: 'AI Reads Your Bill',
       desc: 'Gemini Vision extracts every item, price, and tax with high-confidence scoring.',
     },
     {
-      icon: <Zap size={22} className="text-sky-600" />,
-      bg: 'bg-sky-50',
+      icon: <Zap size={22} className="text-violet-600" />,
+      bg: 'bg-violet-50',
       title: 'Smart Assignment',
       desc: 'Tap to assign items to people, or describe it in plain English — AI handles the rest.',
     },
     {
-      icon: <Shield size={22} className="text-violet-600" />,
-      bg: 'bg-violet-50',
+      icon: <Shield size={22} className="text-indigo-600" />,
+      bg: 'bg-indigo-50',
       title: 'Exact to the Cent',
       desc: 'Deterministic math, never AI guesses. Tax and discounts split proportionally.',
     },
   ]
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: '#faf9f7' }}>
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-white">
       {/* Background dot grid */}
-      <div className="absolute inset-0 dot-grid opacity-60 pointer-events-none" />
+      <div className="absolute inset-0 dot-grid opacity-70 pointer-events-none" />
 
-      {/* Gradient blobs */}
-      <div className="absolute top-0 right-0 w-[480px] h-[480px] rounded-full opacity-20 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #059669 0%, transparent 70%)' }} />
-      <div className="absolute bottom-0 left-0 w-[360px] h-[360px] rounded-full opacity-15 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #0ea5e9 0%, transparent 70%)' }} />
+      {/* Purple Gradient blobs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-20 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #7c3aed 0%, transparent 70%)' }} />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-15 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #a855f7 0%, transparent 70%)' }} />
 
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4 glass border-b border-white/60">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center shadow-sm">
-            <Receipt className="text-white" size={18} />
+      <header className="relative z-10 flex items-center justify-between px-6 py-4 glass border-b border-purple-100/60">
+        <div 
+          onClick={() => navigate('/')} 
+          className="flex items-center gap-2.5 cursor-pointer group transition-transform hover:scale-[1.02]"
+          title="Back to Intro"
+        >
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-md group-hover:from-purple-700 group-hover:to-indigo-700 transition-all">
+            <Receipt className="text-white" size={19} />
           </div>
-          <span className="font-bold text-xl text-ink-900">SplitSmart</span>
+          <span className="font-bold text-xl text-ink-900 tracking-tight">Smart Bill Splitter</span>
         </div>
-        <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 tracking-wide">Beta</span>
+        <button
+          onClick={() => navigate('/')}
+          className="text-xs text-purple-700 font-semibold hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-3.5 py-1.5 rounded-full border border-purple-200 hover:border-purple-300 transition-all shadow-sm"
+        >
+          ← Home
+        </button>
       </header>
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12">
         {/* Hero */}
         <div className="text-center max-w-2xl mx-auto mb-10 animate-fade-in">
-          <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-sm font-semibold px-4 py-2 rounded-full mb-6 border border-emerald-200 shadow-sm animate-bounce-in">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          <div className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 text-sm font-semibold px-4 py-2 rounded-full mb-6 border border-purple-200 shadow-sm animate-bounce-in">
+            <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
             AI-Powered · Exact to the cent
           </div>
 
@@ -127,19 +136,19 @@ export default function LandingPage() {
             className={cn(
               'relative border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 cursor-pointer',
               dragging
-                ? 'border-emerald-500 bg-emerald-50 scale-[1.01] shadow-glow-emerald'
+                ? 'border-purple-500 bg-purple-50/80 scale-[1.01] shadow-glow-purple'
                 : files.length
-                ? 'border-stone-200 bg-white cursor-default shadow-card'
-                : 'border-stone-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/30 hover:shadow-card-hover'
+                ? 'border-purple-100 bg-white cursor-default shadow-card'
+                : 'border-purple-200/90 bg-white hover:border-purple-400 hover:bg-purple-50/30 hover:shadow-card-hover'
             )}
           >
             {files.length === 0 ? (
               <div className="flex flex-col items-center gap-4">
                 <div className={cn(
                   'w-16 h-16 rounded-2xl flex items-center justify-center transition-transform duration-200',
-                  dragging ? 'bg-emerald-200 scale-110' : 'bg-emerald-100'
+                  dragging ? 'bg-purple-200 scale-110' : 'bg-purple-100'
                 )}>
-                  <ImagePlus className={cn('transition-colors duration-200', dragging ? 'text-emerald-700' : 'text-emerald-600')} size={28} />
+                  <ImagePlus className={cn('transition-colors duration-200', dragging ? 'text-purple-800' : 'text-purple-600')} size={28} />
                 </div>
                 <div>
                   <p className="text-ink-900 font-semibold text-lg">

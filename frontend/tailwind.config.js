@@ -4,29 +4,43 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Warm off-white backgrounds
+        // Pure white and soft lavender surfaces
         surface: {
-          50: '#faf9f7',
-          100: '#f5f3ef',
-          200: '#eceae4',
+          50: '#ffffff',
+          100: '#faf8ff',
+          200: '#f3f0fc',
         },
-        // Deep charcoal text
+        // Modern crisp slate/ink text
         ink: {
-          900: '#1a1917',
-          700: '#3d3b37',
-          500: '#6b6860',
-          400: '#c8c5bf',
-          300: '#a09d97',
+          900: '#0f172a',
+          700: '#334155',
+          500: '#64748b',
+          400: '#94a3b8',
+          300: '#cbd5e1',
         },
-        // Emerald/teal primary accent
+        // Rich purple & violet gradient palette
+        purple: {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#a855f7',
+          600: '#9333ea',
+          700: '#7e22ce',
+          800: '#6b21a8',
+          900: '#581c87',
+        },
+        // Emerald mapped to purple palette for seamless global theme compatibility
         emerald: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          400: '#34d399',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          400: '#c084fc',
+          500: '#a855f7',
+          600: '#7c3aed',
+          700: '#6d28d9',
+          800: '#581c87',
         },
         // Amber for "needs review"
         amber: {
@@ -52,10 +66,11 @@ export default {
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       boxShadow: {
-        card: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
-        'card-hover': '0 4px 12px 0 rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06)',
-        'card-elevated': '0 8px 24px 0 rgb(0 0 0 / 0.10)',
-        'glow-emerald': '0 0 20px 4px rgb(5 150 105 / 0.15)',
+        card: '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.03)',
+        'card-hover': '0 8px 24px -4px rgba(124, 58, 237, 0.1), 0 2px 6px -2px rgba(0, 0, 0, 0.04)',
+        'card-elevated': '0 12px 32px -4px rgba(124, 58, 237, 0.12)',
+        'glow-emerald': '0 0 25px 4px rgba(124, 58, 237, 0.22)',
+        'glow-purple': '0 0 25px 4px rgba(124, 58, 237, 0.22)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',

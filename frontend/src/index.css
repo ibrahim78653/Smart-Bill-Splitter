@@ -6,13 +6,13 @@
 
 @layer base {
   :root {
-    --color-bg: #faf9f7;
+    --color-bg: #ffffff;
     --color-surface: #ffffff;
-    --color-border: #e8e6e0;
-    --color-ink: #1a1917;
-    --color-ink-muted: #6b6860;
-    --color-accent: #059669;
-    --color-accent-light: #d1fae5;
+    --color-border: #ede9fe;
+    --color-ink: #0f172a;
+    --color-ink-muted: #64748b;
+    --color-accent: #7c3aed;
+    --color-accent-light: #f3e8ff;
     --color-warning: #d97706;
     --color-warning-light: #fef3c7;
     --color-danger: #dc2626;
@@ -40,16 +40,16 @@
   /* ── Cards ─────────────────────────────────────────────────────────────────── */
 
   .card {
-    @apply bg-white rounded-2xl border border-stone-100 shadow-card;
+    @apply bg-white rounded-2xl border border-purple-100/60 shadow-card;
     transition: box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   .card:hover {
-    @apply shadow-card-hover;
+    @apply shadow-card-hover border-purple-200/80;
   }
 
   .card-elevated {
-    @apply bg-white rounded-2xl border border-stone-100 shadow-card-elevated;
+    @apply bg-white rounded-2xl border border-purple-100/80 shadow-card-elevated;
   }
 
   .card-interactive {
@@ -59,24 +59,24 @@
   /* ── Buttons ─────────────────────────────────────────────────────────────── */
 
   .btn-primary {
-    @apply bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold
-           px-5 py-3 rounded-xl transition-all duration-150 ease-out
-           focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+    @apply bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700 active:from-purple-800 active:to-indigo-800 text-white font-semibold
+           px-5 py-3 rounded-xl transition-all duration-200 ease-out
+           focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed
-           shadow-sm hover:shadow-md active:shadow-none active:scale-[0.98];
+           shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/35 active:shadow-none active:scale-[0.98];
   }
 
   .btn-secondary {
-    @apply bg-stone-100 hover:bg-stone-200 active:bg-stone-300 text-ink-700 font-semibold
-           px-5 py-3 rounded-xl transition-all duration-150 ease-out
-           focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-2
+    @apply bg-purple-50/70 hover:bg-purple-100/80 active:bg-purple-200 text-purple-900 font-semibold
+           px-5 py-3 rounded-xl transition-all duration-150 ease-out border border-purple-200/60
+           focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
   }
 
   .btn-ghost {
-    @apply text-ink-500 hover:text-ink-900 hover:bg-stone-100 font-medium
+    @apply text-ink-500 hover:text-purple-900 hover:bg-purple-50/80 font-medium
            px-4 py-2 rounded-lg transition-all duration-150 ease-out
-           focus:outline-none focus:ring-2 focus:ring-stone-300 active:scale-[0.97];
+           focus:outline-none focus:ring-2 focus:ring-purple-300 active:scale-[0.97];
   }
 
   .btn-danger {
@@ -88,10 +88,10 @@
   /* ── Form inputs ────────────────────────────────────────────────────────── */
 
   .input-field {
-    @apply w-full bg-white border border-stone-200 rounded-xl px-4 py-3
+    @apply w-full bg-white border border-purple-100 rounded-xl px-4 py-3
            text-ink-900 placeholder-ink-400 text-sm
-           focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent
-           transition-all duration-150;
+           focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400
+           transition-all duration-150 shadow-sm;
   }
 
   /* ── Skeleton loader ────────────────────────────────────────────────────── */
@@ -99,9 +99,9 @@
   .skeleton {
     background: linear-gradient(
       90deg,
-      #f0efed 25%,
-      #e8e6e1 37%,
-      #f0efed 63%
+      #f5f3ff 25%,
+      #ede9fe 37%,
+      #f5f3ff 63%
     );
     background-size: 600px 100%;
     @apply animate-shimmer rounded-lg;
@@ -118,34 +118,34 @@
   /* ── Confidence badges ──────────────────────────────────────────────────── */
 
   .badge-high {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
-           bg-emerald-100 text-emerald-700;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold
+           bg-purple-100 text-purple-800 border border-purple-200;
   }
 
   .badge-medium {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
-           bg-amber-100 text-amber-700;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold
+           bg-amber-100 text-amber-700 border border-amber-200;
   }
 
   .badge-low {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
-           bg-danger-100 text-danger-600;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold
+           bg-danger-100 text-danger-600 border border-danger-200;
   }
 
   /* ── Status chips ───────────────────────────────────────────────────────── */
 
   .chip {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+    @apply inline-flex items-center px-3.5 py-1.5 rounded-full text-sm font-medium
            border transition-all duration-150 cursor-pointer select-none
-           active:scale-95;
+           active:scale-95 shadow-sm;
   }
 
   .chip-selected {
-    @apply bg-emerald-600 border-emerald-600 text-white;
+    @apply bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border-purple-600 text-white shadow-purple-500/25;
   }
 
   .chip-unselected {
-    @apply bg-white border-stone-200 text-ink-700 hover:border-emerald-400 hover:text-emerald-700;
+    @apply bg-white border-purple-100 text-ink-700 hover:border-purple-400 hover:text-purple-700 hover:bg-purple-50/50;
   }
 
   /* ── Step progress bar ──────────────────────────────────────────────────── */
@@ -166,11 +166,11 @@
   /* ── Processing steps ───────────────────────────────────────────────────── */
 
   .step-done {
-    @apply text-emerald-600;
+    @apply text-purple-600;
   }
 
   .step-active {
-    @apply text-amber-600 animate-pulse-soft;
+    @apply text-violet-600 animate-pulse-soft font-semibold;
   }
 
   .step-pending {
@@ -184,7 +184,7 @@
   }
 
   .reconcile-ok {
-    @apply bg-emerald-50 border-emerald-200;
+    @apply bg-purple-50/70 border-purple-200/80 text-purple-950;
   }
 
   .reconcile-warn {
@@ -208,7 +208,7 @@
   /* ── Sticky bottom bar (mobile) ─────────────────────────────────────────── */
 
   .sticky-bottom {
-    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-stone-100
+    @apply fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-purple-100
            px-4 py-3 flex gap-3 z-50 shadow-card-elevated;
   }
 
@@ -221,7 +221,7 @@
   /* ── Gradient text ──────────────────────────────────────────────────────── */
 
   .gradient-text {
-    background: linear-gradient(135deg, #059669 0%, #0ea5e9 100%);
+    background: linear-gradient(135deg, #6d28d9 0%, #9333ea 50%, #c084fc 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -230,16 +230,16 @@
   /* ── Glass surface ──────────────────────────────────────────────────────── */
 
   .glass {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(233, 213, 255, 0.7);
   }
 
   /* ── Dot grid background ────────────────────────────────────────────────── */
 
   .dot-grid {
-    background-image: radial-gradient(circle, #d6d3cc 1px, transparent 1px);
+    background-image: radial-gradient(circle, #e2d9f3 1.2px, transparent 1.2px);
     background-size: 24px 24px;
   }
 }
@@ -251,7 +251,7 @@
 
   /* Focus visible for accessibility */
   .focus-ring {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2;
   }
 
   /* Smooth scrolling */

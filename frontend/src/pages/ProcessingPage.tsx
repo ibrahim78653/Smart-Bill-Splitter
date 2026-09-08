@@ -85,43 +85,42 @@ export default function ProcessingPage() {
   const progressPct = Math.round((doneCount / steps.length) * 100)
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden"
-      style={{ background: '#faf9f7' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden bg-white">
       {/* Background blobs */}
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #059669 0%, transparent 70%)' }} />
+        style={{ background: 'radial-gradient(circle, #7c3aed 0%, transparent 70%)' }} />
       <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full opacity-15 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #0ea5e9 0%, transparent 70%)' }} />
+        style={{ background: 'radial-gradient(circle, #a855f7 0%, transparent 70%)' }} />
 
       {/* Logo */}
-      <div className="flex items-center gap-2 mb-10 animate-fade-in">
-        <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center shadow-sm">
-          <Receipt className="text-white" size={18} />
+      <div className="flex items-center gap-2.5 mb-10 animate-fade-in cursor-pointer" onClick={() => navigate('/')}>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-md">
+          <Receipt className="text-white" size={19} />
         </div>
-        <span className="font-bold text-xl text-ink-900">SplitSmart</span>
+        <span className="font-bold text-xl text-ink-900 tracking-tight">Smart Bill Splitter</span>
       </div>
 
       <div className="w-full max-w-sm animate-slide-up">
-        <div className="card p-8">
+        <div className="card p-8 border border-purple-100/80 shadow-card-elevated">
           {/* Spinner rings */}
           <div className="flex justify-center mb-8">
             <div className="relative w-20 h-20">
               {/* Outer ring */}
               {!error && (
                 <>
-                  <div className="absolute inset-0 rounded-full border-2 border-emerald-100" />
-                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-emerald-500 animate-ring-spin" />
-                  <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-emerald-300 animate-ring-spin-slow" />
+                  <div className="absolute inset-0 rounded-full border-2 border-purple-100" />
+                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-purple-600 animate-ring-spin" />
+                  <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-violet-400 animate-ring-spin-slow" />
                 </>
               )}
               <div className={cn(
                 'absolute inset-0 rounded-full flex items-center justify-center',
-                error ? 'bg-danger-50' : ''
+                error ? 'bg-danger-50' : 'bg-purple-50/50'
               )}>
                 {error ? (
                   <span className="text-2xl">⚠️</span>
                 ) : (
-                  <Receipt className="text-emerald-600" size={24} />
+                  <Receipt className="text-purple-600" size={24} />
                 )}
               </div>
             </div>
@@ -145,9 +144,9 @@ export default function ProcessingPage() {
               <p className="text-ink-400 text-sm text-center mb-6">This takes about 10–20 seconds</p>
 
               {/* Progress bar */}
-              <div className="w-full h-1.5 bg-stone-100 rounded-full mb-6 overflow-hidden">
+              <div className="w-full h-1.5 bg-purple-50 rounded-full mb-6 overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-700 ease-out"
+                  className="h-full bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
@@ -166,7 +165,7 @@ export default function ProcessingPage() {
                   >
                     <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center">
                       {step.status === 'done' ? (
-                        <CheckCircle2 className="text-emerald-600 animate-check-pop" size={20} />
+                        <CheckCircle2 className="text-purple-600 animate-check-pop" size={20} />
                       ) : step.status === 'active' ? (
                         <span className="text-base animate-pulse">{step.emoji}</span>
                       ) : (
@@ -176,8 +175,8 @@ export default function ProcessingPage() {
                     <span
                       className={cn(
                         'text-sm font-medium transition-colors duration-200',
-                        step.status === 'done'   ? 'text-emerald-700' :
-                        step.status === 'active' ? 'text-amber-600 animate-pulse-soft' :
+                        step.status === 'done'   ? 'text-purple-700 font-semibold' :
+                        step.status === 'active' ? 'text-violet-600 animate-pulse-soft font-semibold' :
                         'text-ink-300'
                       )}
                     >

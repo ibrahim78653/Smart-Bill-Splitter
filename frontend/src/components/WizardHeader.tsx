@@ -19,14 +19,14 @@ export default function WizardHeader({ onStepClick }: WizardHeaderProps) {
   const { currentStep } = useBillStore()
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-100 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-purple-100 shadow-sm">
       <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-4">
         {/* Logo */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center shadow-sm">
+        <div className="flex items-center gap-2 flex-shrink-0 cursor-pointer" onClick={() => window.location.href = '/'}>
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-sm">
             <Receipt className="text-white" size={14} />
           </div>
-          <span className="font-bold text-sm text-ink-900 hidden sm:block">SplitSmart</span>
+          <span className="font-bold text-sm text-ink-900 hidden sm:block">Smart Bill Splitter</span>
         </div>
 
         {/* Step track */}
@@ -53,10 +53,10 @@ export default function WizardHeader({ onStepClick }: WizardHeaderProps) {
                     className={cn(
                       'w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all duration-300',
                       isDone
-                        ? 'bg-emerald-600 text-white scale-90'
+                        ? 'bg-purple-600 text-white scale-90'
                         : isActive
-                        ? 'bg-emerald-600 text-white scale-110 shadow-md ring-2 ring-emerald-200'
-                        : 'bg-stone-100 text-ink-400'
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white scale-110 shadow-md ring-4 ring-purple-100'
+                        : 'bg-purple-50 text-ink-400 border border-purple-100'
                     )}
                   >
                     {isDone ? (
@@ -68,7 +68,7 @@ export default function WizardHeader({ onStepClick }: WizardHeaderProps) {
                   <span
                     className={cn(
                       'text-[9px] font-semibold leading-none transition-colors duration-200 hidden sm:block',
-                      isActive ? 'text-emerald-600' : isDone ? 'text-emerald-500' : 'text-ink-400'
+                      isActive ? 'text-purple-700 font-bold' : isDone ? 'text-purple-500' : 'text-ink-400'
                     )}
                   >
                     {step.label}
@@ -77,11 +77,11 @@ export default function WizardHeader({ onStepClick }: WizardHeaderProps) {
 
                 {/* Connector line */}
                 {idx < STEPS.length - 1 && (
-                  <div className="flex-1 h-0.5 mx-1.5 rounded-full overflow-hidden bg-stone-100">
+                  <div className="flex-1 h-0.5 mx-1.5 rounded-full overflow-hidden bg-purple-50">
                     <div
                       className={cn(
                         'h-full rounded-full transition-all duration-500',
-                        isDone ? 'bg-emerald-500 w-full' : 'w-0'
+                        isDone ? 'bg-gradient-to-r from-purple-600 to-indigo-600 w-full' : 'w-0'
                       )}
                     />
                   </div>
