@@ -65,7 +65,7 @@ export default function IntroPage() {
 
           {/* Main Heading */}
           <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight leading-[1.08] mb-6 drop-shadow-[0_8px_32px_rgba(0,0,0,0.7)] animate-slide-up">
-            Smart Bill Splittter
+            Smart Bill Splitter
           </h1>
 
           {/* Text Below Heading */}

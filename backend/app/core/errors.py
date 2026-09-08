@@ -16,6 +16,7 @@ class ErrorCode(str, Enum):
     # Extraction errors
     EXTRACTION_FAILED = "EXTRACTION_FAILED"
     EXTRACTION_TIMEOUT = "EXTRACTION_TIMEOUT"
+    API_QUOTA_EXCEEDED = "API_QUOTA_EXCEEDED"
     # Validation errors
     VALIDATION_ERROR = "VALIDATION_ERROR"
     # Calculation errors
@@ -41,6 +42,9 @@ USER_MESSAGES: dict[ErrorCode, str] = {
     ),
     ErrorCode.EXTRACTION_TIMEOUT: (
         "The extraction took too long. Please try again with a clearer photo."
+    ),
+    ErrorCode.API_QUOTA_EXCEEDED: (
+        "Gemini API free tier quota exceeded. Please wait a moment or check your API key quota."
     ),
     ErrorCode.VALIDATION_ERROR: "The data provided is invalid. Please check and try again.",
     ErrorCode.RECONCILIATION_MISMATCH: (
