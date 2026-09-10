@@ -43,7 +43,7 @@ export default function IntroPage() {
 
         <div className="flex items-center gap-3">
           <a
-            href="http://localhost:8000/api/docs"
+            href={import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/docs` : (import.meta.env.PROD ? '/api/docs' : 'http://localhost:8000/api/docs')}
             target="_blank"
             rel="noreferrer"
             className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium text-white/90 bg-white/10 backdrop-blur-md border border-purple-300/20 hover:bg-purple-600/30 hover:text-white transition-all shadow-sm"

@@ -1,7 +1,9 @@
 /** API client — all requests go through here. Zero financial arithmetic in frontend. */
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
+  ? import.meta.env.VITE_API_URL
+  : (import.meta.env.PROD ? '' : 'http://localhost:8000')
 
 export const api = axios.create({
   baseURL: API_BASE,
